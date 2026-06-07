@@ -126,15 +126,21 @@ export default function CameraVerification() {
           });
           
           if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
+            const errData = await res.json().catch(() => ({ status: res.status }));
             console.error("API merespon error:", errData);
+            alert("ERROR DARI SERVER: " + JSON.stringify(errData));
+          } else {
+             // Opsional: Untuk memastikan berhasil
+             // alert("Berhasil mengirim ke server!");
           }
-        } catch (fetchErr) {
+        } catch (fetchErr: any) {
           console.error("Gagal melakukan fetch:", fetchErr);
+          alert("GAGAL KONEKSI API: " + fetchErr.message);
         }
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gagal membaca gambar", error);
+      alert("GAGAL BACA GAMBAR: " + error.message);
     }
   };
 
