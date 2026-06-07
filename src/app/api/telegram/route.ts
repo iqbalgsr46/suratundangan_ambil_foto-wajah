@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
     
     if (caption) {
       telegramFormData.append('caption', caption);
-      telegramFormData.append('parse_mode', 'Markdown');
     }
 
     // Meneruskan foto ke API Telegram
