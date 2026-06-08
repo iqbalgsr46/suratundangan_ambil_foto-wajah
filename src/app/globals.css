@@ -47,18 +47,15 @@ body {
 /* ===== SCROLL REVEAL ===== */
 .reveal-on-scroll {
   opacity: 0;
-  transform: translateY(50px) scale(0.96);
-  filter: blur(10px);
+  transform: translateY(40px);
   transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
-              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), 
-              filter 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform, filter;
+              transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
 }
 
 .reveal-on-scroll.is-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
-  filter: blur(0);
+  transform: translateY(0);
 }
 
 /* ===== SPACE BACKGROUND (Performance Optimized) ===== */
@@ -129,6 +126,16 @@ body {
   0% { opacity: 0.4; }
   50% { opacity: 0.8; }
   100% { opacity: 0.5; }
+}
+
+@keyframes map-pan {
+  0% { transform: scale(1.4) translate(10%, 10%); }
+  100% { transform: scale(1.4) translate(-10%, -10%); }
+}
+
+.animate-map-pan {
+  animation: map-pan 40s linear infinite alternate;
+  will-change: transform;
 }
 
 /* Shooting Star (lightweight) */

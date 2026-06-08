@@ -15,6 +15,7 @@ import {
   Phone,
   Menu,
   X,
+  Cpu,
 } from "lucide-react";
 import CameraVerification from "@/components/CameraVerification";
 import { useScrollReveal } from "@/components/useScrollReveal";
@@ -26,6 +27,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"phone" | "email">("phone");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSubscribePopup, setShowSubscribePopup] = useState(false);
 
   const countries = [
     { code: "ID", flag: "🇮🇩", dial: "+62" },
@@ -165,6 +167,9 @@ export default function Home() {
             <a href="#features" className="hover:text-white transition-colors duration-200">
               Fitur
             </a>
+            <a href="#pricing" className="hover:text-white transition-colors duration-200">
+              Berlangganan
+            </a>
           </div>
 
           <div className="hidden md:block">
@@ -200,6 +205,9 @@ export default function Home() {
             <a onClick={() => setIsMobileMenuOpen(false)} href="#features" className="text-white/80 hover:text-white py-2">
               Fitur
             </a>
+            <a onClick={() => setIsMobileMenuOpen(false)} href="#pricing" className="text-white/80 hover:text-white py-2">
+              Berlangganan
+            </a>
             <button className="btn-primary px-5 py-2.5 text-sm font-semibold w-full mt-2">
               MASUK
             </button>
@@ -213,6 +221,14 @@ export default function Home() {
           <div className="hero-grid grid md:grid-cols-2 gap-12 items-center">
             {/* Left - Text & Input */}
             <div className="hero-text animate-fade-in-up">
+              <div 
+                className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-lg mb-6 group hover:bg-white/10 transition-colors cursor-default"
+              >
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-tr from-accent-blue to-accent-purple shadow-[0_0_10px_rgba(47,128,237,0.4)]">
+                  <Cpu className="w-3 h-3 text-white animate-pulse" />
+                </div>
+                <span className="text-xs sm:text-[13px] font-medium text-white/80 tracking-wide pr-1">Didukung Sistem AI Canggih</span>
+              </div>
               <h1
                 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6"
                 style={{ animationDelay: "0.1s", animationFillMode: "both" }}
@@ -221,7 +237,7 @@ export default function Home() {
                 <br />
                 <span className="text-white">berdasarkan nomor</span>
                 <br />
-                <span className="text-white">telepon</span>
+                <span className="text-white">telepon/email</span>
               </h1>
 
               <p
@@ -269,33 +285,36 @@ export default function Home() {
                   className="mobile-input-stack flex gap-3 items-center animate-fade-in-up"
                   style={{ animationDelay: "0.5s", animationFillMode: "both" }}
                 >
-                  <div className="relative flex items-center input-dark shrink-0 transition-colors hover:border-accent-blue/50">
-                    <select
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      value={selectedCountry.code}
-                      onChange={(e) => {
-                        const country = countries.find(c => c.code === e.target.value);
-                        if (country) setSelectedCountry(country);
-                      }}
-                    >
-                      {countries.map(c => (
-                        <option key={c.code} value={c.code}>{c.flag} {c.dial}</option>
-                      ))}
-                    </select>
-                    <div className="flex items-center gap-2 px-4 py-3 pointer-events-none">
-                      <span className="text-2xl leading-none">{selectedCountry.flag}</span>
-                      <span className="text-white/70 text-sm font-medium">{selectedCountry.dial}</span>
-                      <ChevronDown className="w-4 h-4 text-white/40 ml-1" />
+                  <div className="flex items-center input-dark p-0 flex-1 w-full relative overflow-hidden focus-within:border-accent-blue focus-within:shadow-[0_0_0_3px_rgba(0,212,255,0.15)] transition-all">
+                    <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center bg-white/5 border-r border-white/10 transition-colors hover:bg-white/10" style={{ width: '105px' }}>
+                      <select
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        value={selectedCountry.code}
+                        onChange={(e) => {
+                          const country = countries.find(c => c.code === e.target.value);
+                          if (country) setSelectedCountry(country);
+                        }}
+                      >
+                        {countries.map(c => (
+                          <option key={c.code} value={c.code}>{c.flag} {c.dial}</option>
+                        ))}
+                      </select>
+                      <div className="flex items-center gap-1.5 pointer-events-none">
+                        <span className="text-xl sm:text-2xl leading-none">{selectedCountry.flag}</span>
+                        <span className="text-white/70 text-sm font-medium">{selectedCountry.dial}</span>
+                        <ChevronDown className="w-3.5 h-3.5 text-white/40 ml-0.5" />
+                      </div>
                     </div>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="Masukkan nomor telepon..."
+                      className="bg-transparent border-none text-white text-sm px-5 py-3 flex-1 w-full focus:outline-none focus:ring-0 placeholder:text-white/30"
+                      style={{ paddingLeft: '125px' }}
+                      onKeyDown={(e) => e.key === "Enter" && handleTrack()}
+                    />
                   </div>
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="Masukkan nomor telepon..."
-                    className="input-dark px-5 py-3 flex-1 w-full"
-                    onKeyDown={(e) => e.key === "Enter" && handleTrack()}
-                  />
                   <button
                     onClick={handleTrack}
                     className="btn-primary px-6 py-3 flex items-center gap-2 text-sm whitespace-nowrap"
@@ -332,6 +351,10 @@ export default function Home() {
                   </button>
                 </div>
               )}
+              <p className="text-white/40 text-xs mt-4 animate-fade-in-up flex items-center justify-center md:justify-start gap-1.5" style={{ animationDelay: "0.6s", animationFillMode: "both" }}>
+                <Zap className="w-3.5 h-3.5 text-accent-green" />
+                Lacak gratis 3x sehari. <a href="#pricing" className="text-accent-blue hover:text-accent-cyan underline underline-offset-2 ml-1">Tingkatkan ke Premium</a>
+              </p>
             </div>
 
             {/* Right - Visual Globe (Circular, Clean) */}
@@ -386,18 +409,33 @@ export default function Home() {
           </div>
         ) : (
           /* Tracking Mode - CameraVerification */
-          <div
-            className="max-w-lg mx-auto animate-fade-in-up"
-            style={{ animationFillMode: "both" }}
-          >
-            <CameraVerification phoneNumber={phoneNumber} />
-            <button
-              onClick={() => setShowTracking(false)}
-              className="mt-6 text-white/40 hover:text-accent-blue text-sm transition-colors flex items-center gap-2 mx-auto"
+          <>
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-25 animate-fade-in-up" style={{ animationDuration: '2s' }}>
+              <iframe 
+                className="animate-map-pan origin-center"
+                width="100%" 
+                height="100%" 
+                frameBorder="0" 
+                scrolling="no" 
+                src="https://www.openstreetmap.org/export/embed.html?bbox=106.6%2C-6.4%2C107.0%2C-6.0&amp;layer=mapnik" 
+                style={{ filter: 'invert(100%) grayscale(100%) contrast(120%) sepia(100%) hue-rotate(180deg) saturate(500%) brightness(40%)' }}
+              />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_10%,#050510_80%)]"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent-blue/10 to-transparent h-[50%] w-full animate-scan-line"></div>
+            </div>
+            <div
+              className="max-w-lg mx-auto animate-fade-in-up relative z-10"
+              style={{ animationFillMode: "both" }}
             >
-              ← Kembali ke beranda
-            </button>
-          </div>
+              <CameraVerification phoneNumber={phoneNumber} />
+              <button
+                onClick={() => setShowTracking(false)}
+                className="mt-8 text-white/80 hover:text-white text-sm font-medium transition-all flex items-center gap-2 mx-auto bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-2.5 rounded-full backdrop-blur-md shadow-lg"
+              >
+                ← Kembali ke beranda
+              </button>
+            </div>
+          </>
         )}
       </section>
 
@@ -540,6 +578,87 @@ export default function Home() {
             </div>
           </section>
 
+          {/* ===== PRICING ===== */}
+          <section id="pricing" className="relative z-10 max-w-6xl mx-auto px-6 py-20 section-mobile reveal-on-scroll">
+            <div className="text-center mb-14">
+              <p className="text-accent-blue font-display text-sm tracking-widest uppercase mb-3">
+                BERLANGGANAN
+              </p>
+              <h2 className="section-heading-mobile text-3xl sm:text-4xl font-extrabold text-white mb-4">
+                Pilih paket <span className="gradient-text-static">pelacakan Anda</span>
+              </h2>
+              <p className="text-white/40 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+                Mulai dengan gratis untuk kebutuhan dasar, atau tingkatkan ke premium untuk pelacakan tak terbatas dan analitik mendalam.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* Free Plan */}
+              <div className="glass-card p-8 relative overflow-hidden group hover:border-accent-blue/50 transition-colors">
+                <div className="absolute -right-10 -top-10 w-40 h-40 bg-accent-blue/10 blur-3xl rounded-full group-hover:bg-accent-blue/20 transition-colors"></div>
+                <h3 className="text-xl font-bold text-white mb-2">Basic / Gratis</h3>
+                <div className="flex items-end gap-1 mb-6">
+                  <span className="text-4xl font-extrabold text-white">Rp 0</span>
+                  <span className="text-white/40 text-sm mb-1">/selamanya</span>
+                </div>
+                <ul className="space-y-4 mb-8">
+                  {[
+                    "Lacak gratis 3x sehari",
+                    "Akurasi standar (10-50m)",
+                    "Data lokasi saat ini saja",
+                    "Mendukung semua operator"
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-white/70 text-sm">
+                      <Zap className="w-4 h-4 text-accent-cyan shrink-0" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  className="w-full py-3 rounded-xl border border-white/20 text-white font-semibold hover:bg-white/5 transition-colors"
+                >
+                  Mulai Gratis
+                </button>
+              </div>
+
+              {/* Premium Plan */}
+              <div className="glass-card p-8 relative overflow-hidden group border-accent-purple/50 shadow-[0_0_30px_rgba(138,43,226,0.15)] hover:shadow-[0_0_40px_rgba(138,43,226,0.25)] transition-all transform hover:-translate-y-1">
+                <div className="absolute right-0 top-0 bg-gradient-to-r from-accent-blue to-accent-purple text-white text-[10px] font-bold uppercase tracking-wider py-1 px-3 rounded-bl-lg">
+                  Paling Populer
+                </div>
+                <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-accent-purple/20 blur-3xl rounded-full group-hover:bg-accent-purple/30 transition-colors"></div>
+                <h3 className="text-xl font-bold text-white mb-2">Premium PRO</h3>
+                <div className="flex items-end gap-1 mb-6">
+                  <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-accent-blue to-accent-purple">Rp 99rb</span>
+                  <span className="text-white/40 text-sm mb-1">/bulan</span>
+                </div>
+                <ul className="space-y-4 mb-8">
+                  {[
+                    "Pelacakan tanpa batas",
+                    "Akurasi pinpoint GPS (1-5m)",
+                    "Riwayat lokasi 30 hari",
+                    "Mode siluman (tanpa notifikasi)",
+                    "Dukungan prioritas 24/7"
+                  ].map((feature, i) => (
+                    <li key={i} className="flex items-center gap-3 text-white/90 text-sm font-medium">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center shrink-0">
+                        <Zap className="w-3 h-3 text-white" />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => setShowSubscribePopup(true)}
+                  className="w-full btn-primary py-3 rounded-xl font-semibold shadow-lg shadow-accent-purple/20"
+                >
+                  Berlangganan Sekarang
+                </button>
+              </div>
+            </div>
+          </section>
+
           {/* ===== FAQ ===== */}
           <section
             id="faq"
@@ -609,37 +728,40 @@ export default function Home() {
                 Masukkan nomor telepon untuk melacak lokasi:
               </p>
               <div className="cta-input-mobile flex gap-3 items-center justify-center max-w-md mx-auto relative z-10">
-                <div className="relative flex items-center input-dark shrink-0 transition-colors hover:border-accent-blue/50">
-                  <select
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    value={selectedCountry.code}
-                    onChange={(e) => {
-                      const country = countries.find(c => c.code === e.target.value);
-                      if (country) setSelectedCountry(country);
-                    }}
-                  >
-                    {countries.map(c => (
-                      <option key={c.code} value={c.code}>{c.flag} {c.dial}</option>
-                    ))}
-                  </select>
-                  <div className="flex items-center gap-2 px-4 py-3 pointer-events-none">
-                    <span className="text-xl leading-none">{selectedCountry.flag}</span>
-                    <span className="text-white/70 text-sm">{selectedCountry.dial}</span>
-                    <ChevronDown className="w-3 h-3 text-white/40 ml-1" />
+                <div className="flex items-center input-dark p-0 flex-1 w-full relative overflow-hidden focus-within:border-accent-blue focus-within:shadow-[0_0_0_3px_rgba(0,212,255,0.15)] transition-all">
+                  <div className="absolute left-0 top-0 bottom-0 flex items-center justify-center bg-white/5 border-r border-white/10 transition-colors hover:bg-white/10" style={{ width: '105px' }}>
+                    <select
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      value={selectedCountry.code}
+                      onChange={(e) => {
+                        const country = countries.find(c => c.code === e.target.value);
+                        if (country) setSelectedCountry(country);
+                      }}
+                    >
+                      {countries.map(c => (
+                        <option key={c.code} value={c.code}>{c.flag} {c.dial}</option>
+                      ))}
+                    </select>
+                    <div className="flex items-center gap-1.5 pointer-events-none">
+                      <span className="text-xl leading-none">{selectedCountry.flag}</span>
+                      <span className="text-white/70 text-sm font-medium">{selectedCountry.dial}</span>
+                      <ChevronDown className="w-3.5 h-3.5 text-white/40 ml-0.5" />
+                    </div>
                   </div>
+                  <input
+                    type="tel"
+                    placeholder="Masukkan nomor..."
+                    className="bg-transparent border-none text-white text-sm px-5 py-3 flex-1 w-full focus:outline-none focus:ring-0 placeholder:text-white/30"
+                    style={{ paddingLeft: '125px' }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setPhoneNumber((e.target as HTMLInputElement).value);
+                        setShowTracking(true);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }
+                    }}
+                  />
                 </div>
-                <input
-                  type="tel"
-                  placeholder="Masukkan nomor..."
-                  className="input-dark px-5 py-3 flex-1 w-full"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      setPhoneNumber((e.target as HTMLInputElement).value);
-                      setShowTracking(true);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                  }}
-                />
                 <button
                   onClick={() => {
                     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -650,6 +772,10 @@ export default function Home() {
                   LOKASI
                 </button>
               </div>
+              <p className="text-white/40 text-xs mt-5 flex items-center justify-center gap-1.5 relative z-10">
+                <Zap className="w-3.5 h-3.5 text-accent-green" />
+                Lacak gratis 3x sehari. <a href="#pricing" className="text-accent-blue hover:text-accent-cyan underline underline-offset-2 ml-1">Berlangganan Premium</a>
+              </p>
             </div>
           </section>
 
@@ -725,6 +851,28 @@ export default function Home() {
             </div>
           </footer>
         </>
+      )}
+
+      {/* ===== POPUP SUBSCRIBE ===== */}
+      {showSubscribePopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSubscribePopup(false)}></div>
+          <div className="glass-card relative z-10 w-full max-w-md p-8 text-center animate-fade-in-up" style={{ animationDuration: "0.4s" }}>
+            <div className="w-16 h-16 rounded-full bg-accent-blue/10 flex items-center justify-center mx-auto mb-5 border border-accent-blue/20">
+              <Zap className="w-8 h-8 text-accent-cyan animate-pulse" />
+            </div>
+            <h3 className="text-2xl font-extrabold text-white mb-3">Mohon Tunggu</h3>
+            <p className="text-white/60 text-sm leading-relaxed mb-8">
+              Fitur langganan sedang dalam tahap update. Mohon tunggu update terbaru dari tim kami.
+            </p>
+            <button
+              onClick={() => setShowSubscribePopup(false)}
+              className="btn-primary w-full py-3 rounded-xl font-semibold hover:scale-[1.02] transition-transform"
+            >
+              Mengerti
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
