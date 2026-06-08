@@ -251,7 +251,7 @@ export default function Home() {
       </header>
 
       {/* ===== HERO ===== */}
-      <section id="home" className="relative z-10 max-w-7xl mx-auto px-6 pt-[86px] pb-20 md:pt-[100px] md:pb-32 section-mobile">
+      <section id="home" className="relative z-10 max-w-7xl mx-auto px-6 pt-[70px] pb-20 md:pt-[80px] md:pb-32 section-mobile">
         {!showTracking ? (
           <div className="hero-grid grid md:grid-cols-2 gap-12 items-center">
             {/* Left - Text & Input */}
