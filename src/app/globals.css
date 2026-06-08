@@ -492,16 +492,29 @@ body {
     flex-direction: column !important;
     gap: 1.5rem !important;
     text-align: center;
+    align-items: center !important;
     min-height: calc(100vh - 80px);
     justify-content: center;
+  }
+
+  .hero-text {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
   }
 
   .hero-grid .hero-text h1 {
     font-size: 2.25rem !important;
     line-height: 1.2 !important;
+    text-align: center !important;
+    width: 100% !important;
   }
 
-  /* Input bar stack on mobile */
+  /* Globe overflow fix on mobile */
+  .globe-container {
+    overflow: visible;
+  }
   .mobile-input-stack {
     flex-direction: column !important;
     gap: 0.75rem !important;
