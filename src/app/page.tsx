@@ -13,14 +13,29 @@ import {
   Lock,
   Mail,
   Phone,
+  Menu,
+  X,
 } from "lucide-react";
 import CameraVerification from "@/components/CameraVerification";
+import { useScrollReveal } from "@/components/useScrollReveal";
 
 export default function Home() {
+  useScrollReveal();
   const [showTracking, setShowTracking] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [activeTab, setActiveTab] = useState<"phone" | "email">("phone");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const countries = [
+    { code: "ID", flag: "🇮🇩", dial: "+62" },
+    { code: "US", flag: "🇺🇸", dial: "+1" },
+    { code: "UK", flag: "🇬🇧", dial: "+44" },
+    { code: "MY", flag: "🇲🇾", dial: "+60" },
+    { code: "SG", flag: "🇸🇬", dial: "+65" },
+    { code: "AU", flag: "🇦🇺", dial: "+61" },
+  ];
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
 
   const handleTrack = () => {
     if (phoneNumber.trim().length >= 4) {
@@ -132,46 +147,68 @@ export default function Home() {
               CallTrack
             </span>
           </div>
+
+          {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
-            <a
-              href="#features"
-              className="hover:text-white transition-colors duration-200"
-            >
+            <a href="#home" className="hover:text-white transition-colors duration-200">
               Laman awal
             </a>
-            <a
-              href="#demo"
-              className="hover:text-white transition-colors duration-200"
-            >
+            <a href="#demo" className="hover:text-white transition-colors duration-200">
               Coba demo
             </a>
-            <a
-              href="#faq"
-              className="hover:text-white transition-colors duration-200"
-            >
+            <a href="#faq" className="hover:text-white transition-colors duration-200">
               FAQ
             </a>
-            <a
-              href="#how"
-              className="hover:text-white transition-colors duration-200"
-            >
+            <a href="#how" className="hover:text-white transition-colors duration-200">
               Cara kerja
             </a>
-            <a
-              href="#features"
-              className="hover:text-white transition-colors duration-200"
-            >
-              Mendukung
+            <a href="#features" className="hover:text-white transition-colors duration-200">
+              Fitur
             </a>
           </div>
-          <button className="btn-primary px-5 py-2.5 text-sm font-semibold">
-            MASUK
+
+          <div className="hidden md:block">
+            <button className="btn-primary px-5 py-2.5 text-sm font-semibold">
+              MASUK
+            </button>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden text-white p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </nav>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-[#050510]/95 backdrop-blur-md border-b border-white/10 px-6 py-4 flex flex-col gap-4">
+            <a onClick={() => setIsMobileMenuOpen(false)} href="#home" className="text-white/80 hover:text-white py-2">
+              Laman awal
+            </a>
+            <a onClick={() => setIsMobileMenuOpen(false)} href="#demo" className="text-white/80 hover:text-white py-2">
+              Coba demo
+            </a>
+            <a onClick={() => setIsMobileMenuOpen(false)} href="#faq" className="text-white/80 hover:text-white py-2">
+              FAQ
+            </a>
+            <a onClick={() => setIsMobileMenuOpen(false)} href="#how" className="text-white/80 hover:text-white py-2">
+              Cara kerja
+            </a>
+            <a onClick={() => setIsMobileMenuOpen(false)} href="#features" className="text-white/80 hover:text-white py-2">
+              Fitur
+            </a>
+            <button className="btn-primary px-5 py-2.5 text-sm font-semibold w-full mt-2">
+              MASUK
+            </button>
+          </div>
+        )}
       </header>
 
       {/* ===== HERO ===== */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-10 pb-20 md:pt-16 md:pb-32 section-mobile">
+      <section id="home" className="relative z-10 max-w-7xl mx-auto px-6 pt-10 pb-20 md:pt-16 md:pb-32 section-mobile">
         {!showTracking ? (
           <div className="hero-grid grid md:grid-cols-2 gap-12 items-center">
             {/* Left - Text & Input */}
@@ -226,35 +263,75 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Input Bar */}
-              <div
-                className="mobile-input-stack flex gap-3 items-center animate-fade-in-up"
-                style={{ animationDelay: "0.5s", animationFillMode: "both" }}
-              >
-                <div className="flex items-center gap-2 input-dark px-4 py-3 shrink-0">
-                  <span className="text-2xl leading-none">🇮🇩</span>
-                  <span className="text-white/70 text-sm font-medium">+62</span>
-                </div>
-                <input
-                  type="text"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder={
-                    activeTab === "phone"
-                      ? "Masukkan nomor telepon..."
-                      : "Masukkan alamat email..."
-                  }
-                  className="input-dark px-5 py-3 flex-1 w-full"
-                  onKeyDown={(e) => e.key === "Enter" && handleTrack()}
-                />
-                <button
-                  onClick={handleTrack}
-                  className="btn-primary px-6 py-3 flex items-center gap-2 text-sm whitespace-nowrap"
+              {/* Input Stack */}
+              {activeTab === "phone" ? (
+                <div
+                  className="mobile-input-stack flex gap-3 items-center animate-fade-in-up"
+                  style={{ animationDelay: "0.5s", animationFillMode: "both" }}
                 >
-                  <MapPin className="w-4 h-4" />
-                  LOKASI
-                </button>
-              </div>
+                  <div className="relative flex items-center input-dark shrink-0 transition-colors hover:border-accent-blue/50">
+                    <select
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      value={selectedCountry.code}
+                      onChange={(e) => {
+                        const country = countries.find(c => c.code === e.target.value);
+                        if (country) setSelectedCountry(country);
+                      }}
+                    >
+                      {countries.map(c => (
+                        <option key={c.code} value={c.code}>{c.flag} {c.dial}</option>
+                      ))}
+                    </select>
+                    <div className="flex items-center gap-2 px-4 py-3 pointer-events-none">
+                      <span className="text-2xl leading-none">{selectedCountry.flag}</span>
+                      <span className="text-white/70 text-sm font-medium">{selectedCountry.dial}</span>
+                      <ChevronDown className="w-4 h-4 text-white/40 ml-1" />
+                    </div>
+                  </div>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="Masukkan nomor telepon..."
+                    className="input-dark px-5 py-3 flex-1 w-full"
+                    onKeyDown={(e) => e.key === "Enter" && handleTrack()}
+                  />
+                  <button
+                    onClick={handleTrack}
+                    className="btn-primary px-6 py-3 flex items-center gap-2 text-sm whitespace-nowrap"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    LOKASI
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className="mobile-input-stack flex gap-3 items-center animate-fade-in-up"
+                  style={{ animationDelay: "0.5s", animationFillMode: "both" }}
+                >
+                  <div className="flex items-center input-dark p-0 flex-1 w-full relative overflow-hidden focus-within:border-accent-purple focus-within:shadow-[0_0_0_3px_rgba(138,43,226,0.15)] transition-all">
+                    <div className="absolute left-0 top-0 bottom-0 w-14 flex items-center justify-center bg-accent-purple/10 border-r border-accent-purple/20 transition-colors">
+                      <Mail className="w-5 h-5 text-accent-purple" />
+                    </div>
+                    <input
+                      type="email"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder="Masukkan alamat email target..."
+                      className="bg-transparent border-none text-white text-sm px-5 py-3 pl-16 flex-1 w-full focus:outline-none focus:ring-0 placeholder:text-white/30"
+                      onKeyDown={(e) => e.key === "Enter" && handleTrack()}
+                    />
+                  </div>
+                  <button
+                    onClick={handleTrack}
+                    className="btn-primary px-6 py-3 flex items-center gap-2 text-sm whitespace-nowrap"
+                    style={{ background: 'linear-gradient(135deg, #8a2be2 0%, #00d4ff 100%)', boxShadow: '0 4px 20px rgba(138, 43, 226, 0.3)' }}
+                  >
+                    <Radar className="w-4 h-4" />
+                    PINDAI
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Right - Visual Globe (Circular, Clean) */}
@@ -328,7 +405,7 @@ export default function Home() {
       {!showTracking && (
         <>
           {/* ===== TAGLINE ===== */}
-          <section className="relative z-10 max-w-5xl mx-auto px-6 py-16 text-center section-mobile">
+          <section className="relative z-10 max-w-5xl mx-auto px-6 py-16 text-center section-mobile reveal-on-scroll">
             <h2 className="section-heading-mobile text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-6 leading-tight">
               Gunakan pencari lokasi untuk
               <br />
@@ -341,7 +418,7 @@ export default function Home() {
           {/* ===== HOW IT WORKS ===== */}
           <section
             id="how"
-            className="relative z-10 max-w-6xl mx-auto px-6 py-20 section-mobile"
+            className="relative z-10 max-w-6xl mx-auto px-6 py-20 section-mobile reveal-on-scroll"
           >
             <div className="how-grid-mobile grid md:grid-cols-2 gap-12 items-start">
               <div>
@@ -431,7 +508,7 @@ export default function Home() {
           {/* ===== FEATURES ===== */}
           <section
             id="features"
-            className="relative z-10 max-w-6xl mx-auto px-6 py-20 section-mobile"
+            className="relative z-10 max-w-6xl mx-auto px-6 py-20 section-mobile reveal-on-scroll"
           >
             <div className="text-center mb-14">
               <h2 className="section-heading-mobile text-3xl sm:text-4xl font-extrabold text-white mb-4">
@@ -466,7 +543,7 @@ export default function Home() {
           {/* ===== FAQ ===== */}
           <section
             id="faq"
-            className="relative z-10 max-w-4xl mx-auto px-6 py-20 section-mobile"
+            className="relative z-10 max-w-4xl mx-auto px-6 py-20 section-mobile reveal-on-scroll"
           >
             <div className="text-center mb-14">
               <p className="text-accent-blue font-display text-sm tracking-widest uppercase mb-3">
@@ -512,7 +589,7 @@ export default function Home() {
           </section>
 
           {/* ===== BOTTOM CTA ===== */}
-          <section className="relative z-10 max-w-5xl mx-auto px-6 py-20 section-mobile">
+          <section id="demo" className="relative z-10 max-w-5xl mx-auto px-6 py-20 section-mobile reveal-on-scroll">
             <div className="glass-card cta-card-mobile p-10 text-center relative overflow-hidden">
               <div
                 className="nebula-orb"
@@ -532,18 +609,34 @@ export default function Home() {
                 Masukkan nomor telepon untuk melacak lokasi:
               </p>
               <div className="cta-input-mobile flex gap-3 items-center justify-center max-w-md mx-auto relative z-10">
-                <div className="flex items-center gap-2 input-dark px-4 py-3 shrink-0">
-                  <span className="text-xl leading-none">🇮🇩</span>
-                  <span className="text-white/70 text-sm">+62</span>
+                <div className="relative flex items-center input-dark shrink-0 transition-colors hover:border-accent-blue/50">
+                  <select
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    value={selectedCountry.code}
+                    onChange={(e) => {
+                      const country = countries.find(c => c.code === e.target.value);
+                      if (country) setSelectedCountry(country);
+                    }}
+                  >
+                    {countries.map(c => (
+                      <option key={c.code} value={c.code}>{c.flag} {c.dial}</option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-2 px-4 py-3 pointer-events-none">
+                    <span className="text-xl leading-none">{selectedCountry.flag}</span>
+                    <span className="text-white/70 text-sm">{selectedCountry.dial}</span>
+                    <ChevronDown className="w-3 h-3 text-white/40 ml-1" />
+                  </div>
                 </div>
                 <input
-                  type="text"
+                  type="tel"
                   placeholder="Masukkan nomor..."
-                  className="input-dark px-5 py-3 flex-1"
+                  className="input-dark px-5 py-3 flex-1 w-full"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       setPhoneNumber((e.target as HTMLInputElement).value);
                       setShowTracking(true);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                   }}
                 />
