@@ -174,7 +174,7 @@ export default function Home() {
       />
 
       {/* ===== HEADER / NAV ===== */}
-      <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-[#050510]/80 border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-50 w-full backdrop-blur-md bg-[#050510]/80 border-b border-white/5">
         <nav className="nav-mobile max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center shadow-lg shadow-accent-blue/20">
@@ -251,7 +251,7 @@ export default function Home() {
       </header>
 
       {/* ===== HERO ===== */}
-      <section id="home" className="relative z-10 max-w-7xl mx-auto px-6 pt-4 pb-20 md:pt-8 md:pb-32 section-mobile">
+      <section id="home" className="relative z-10 max-w-7xl mx-auto px-6 pt-[86px] pb-20 md:pt-[100px] md:pb-32 section-mobile">
         {!showTracking ? (
           <div className="hero-grid grid md:grid-cols-2 gap-12 items-center">
             {/* Left - Text & Input */}
