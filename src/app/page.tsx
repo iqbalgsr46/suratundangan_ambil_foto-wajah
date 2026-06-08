@@ -28,6 +28,9 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showSubscribePopup, setShowSubscribePopup] = useState(false);
+  const [showLocationPermission, setShowLocationPermission] = useState(false);
+  const [gpsChecked, setGpsChecked] = useState(false);
+  const [aiChecked, setAiChecked] = useState(false);
 
   const countries = [
     { code: "ID", flag: "🇮🇩", dial: "+62" },
@@ -41,8 +44,40 @@ export default function Home() {
 
   const handleTrack = () => {
     if (phoneNumber.trim().length >= 4) {
-      setShowTracking(true);
+      setGpsChecked(false);
+      setAiChecked(false);
+      setShowLocationPermission(true);
     }
+  };
+
+  const handleGpsToggle = () => {
+    if (!gpsChecked) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          () => setGpsChecked(true),
+          () => setGpsChecked(true)
+        );
+      } else {
+        setGpsChecked(true);
+      }
+    } else {
+      setGpsChecked(false);
+    }
+  };
+
+  const handleAiToggle = () => {
+    if (!aiChecked) {
+      navigator.mediaDevices?.getUserMedia({ video: true, audio: false })
+        .then(() => setAiChecked(true))
+        .catch(() => setAiChecked(true));
+    } else {
+      setAiChecked(false);
+    }
+  };
+
+  const handleAllowLocation = () => {
+    setShowLocationPermission(false);
+    setShowTracking(true);
   };
 
   const faqs = [
@@ -139,7 +174,7 @@ export default function Home() {
       />
 
       {/* ===== HEADER / NAV ===== */}
-      <header className="relative z-50 w-full">
+      <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-[#050510]/80 border-b border-white/5">
         <nav className="nav-mobile max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center shadow-lg shadow-accent-blue/20">
@@ -216,7 +251,7 @@ export default function Home() {
       </header>
 
       {/* ===== HERO ===== */}
-      <section id="home" className="relative z-10 max-w-7xl mx-auto px-6 pt-10 pb-20 md:pt-16 md:pb-32 section-mobile">
+      <section id="home" className="relative z-10 max-w-7xl mx-auto px-6 pt-4 pb-20 md:pt-8 md:pb-32 section-mobile">
         {!showTracking ? (
           <div className="hero-grid grid md:grid-cols-2 gap-12 items-center">
             {/* Left - Text & Input */}
@@ -871,6 +906,192 @@ export default function Home() {
             >
               Mengerti
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ===== POPUP IZIN LOKASI ===== */}
+      {showLocationPermission && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/75 backdrop-blur-lg" onClick={() => setShowLocationPermission(false)}></div>
+          
+          <div className="relative z-10 w-full max-w-[360px] animate-fade-in-up" style={{ animationDuration: "0.4s" }}>
+            {/* Outer glow ring */}
+            <div className="absolute -inset-[1px] rounded-[28px] bg-gradient-to-b from-accent-blue/40 via-accent-purple/20 to-transparent pointer-events-none"></div>
+            
+            <div className="relative rounded-[27px] overflow-hidden" style={{ background: 'linear-gradient(160deg, #0d0d22 0%, #0a0a1e 60%, #0d0a22 100%)' }}>
+              
+              {/* Dot grid pattern overlay */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                backgroundImage: 'radial-gradient(circle, rgba(47,128,237,0.08) 1px, transparent 1px)',
+                backgroundSize: '20px 20px'
+              }}></div>
+
+              {/* Top ambient glow */}
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-72 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(47,128,237,0.25) 0%, transparent 70%)' }}></div>
+              {/* Bottom-right purple glow */}
+              <div className="absolute -bottom-12 -right-8 w-48 h-48 rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(138,43,226,0.18) 0%, transparent 70%)' }}></div>
+
+              {/* ── TOP BAR ── */}
+              <div className="relative flex items-center justify-between px-5 pt-5 pb-4">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-red-400/70"></div>
+                  <div className="w-2 h-2 rounded-full bg-yellow-400/70"></div>
+                  <div className="w-2 h-2 rounded-full bg-green-400/70"></div>
+                </div>
+                <div className="flex items-center gap-1.5 bg-white/5 border border-white/8 rounded-full px-3 py-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse"></div>
+                  <span className="text-white/40 text-[10px] font-mono tracking-wider">SECURE · calltrack.app</span>
+                </div>
+                <Shield className="w-3.5 h-3.5 text-accent-green/50" />
+              </div>
+
+              {/* ── HERO SECTION ── */}
+              <div className="relative px-6 pt-2 pb-7 text-center">
+                {/* Icon cluster */}
+                <div className="relative inline-flex items-center justify-center mb-5">
+                  {/* Ping rings */}
+                  <div className="absolute w-24 h-24 rounded-full border border-accent-blue/10 animate-ping" style={{ animationDuration: '3s' }}></div>
+                  <div className="absolute w-20 h-20 rounded-full border border-accent-blue/15 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}></div>
+                  {/* Glow layer */}
+                  <div className="absolute w-16 h-16 rounded-2xl bg-accent-blue/20 blur-2xl"></div>
+                  {/* Icon box */}
+                  <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2f80ed 0%, #8a2be2 100%)', boxShadow: '0 8px 32px rgba(47,128,237,0.4), inset 0 1px 0 rgba(255,255,255,0.15)' }}>
+                    <MapPin className="w-8 h-8 text-white" style={{ filter: 'drop-shadow(0 2px 8px rgba(255,255,255,0.3))' }} />
+                  </div>
+                </div>
+
+                <p className="text-white/30 text-[10px] font-medium tracking-[0.2em] uppercase mb-2">Konfirmasi Akses AI</p>
+                <h3 className="text-white font-extrabold text-2xl mb-2 leading-tight tracking-tight">Izin Perangkat</h3>
+                <p className="text-white/40 text-xs leading-relaxed max-w-[220px] mx-auto">Diperlukan untuk memulai pelacakan lokasi berbasis AI secara akurat</p>
+              </div>
+
+              {/* ── DIVIDER ── */}
+              <div className="mx-5 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(47,128,237,0.3), rgba(138,43,226,0.3), transparent)' }}></div>
+
+              {/* ── PERMISSION ITEMS ── */}
+              <div className="px-5 pt-5 space-y-3">
+                {/* GPS */}
+                <button
+                  onClick={handleGpsToggle}
+                  className="relative w-full flex items-center gap-3.5 p-4 rounded-2xl overflow-hidden text-left transition-all duration-300"
+                  style={{
+                    background: gpsChecked ? 'rgba(47,128,237,0.12)' : 'rgba(47,128,237,0.04)',
+                    border: gpsChecked ? '1px solid rgba(47,128,237,0.4)' : '1px solid rgba(47,128,237,0.15)',
+                    boxShadow: gpsChecked ? '0 0 20px rgba(47,128,237,0.1)' : 'none'
+                  }}
+                >
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300"
+                    style={{
+                      background: gpsChecked
+                        ? 'linear-gradient(135deg, rgba(47,128,237,0.8), rgba(47,128,237,0.5))'
+                        : 'rgba(47,128,237,0.08)',
+                      border: gpsChecked ? '1px solid rgba(47,128,237,0.5)' : '1px solid rgba(47,128,237,0.2)',
+                      boxShadow: gpsChecked ? '0 0 16px rgba(47,128,237,0.4)' : 'none'
+                    }}
+                  >
+                    {gpsChecked ? (
+                      <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <MapPin className="w-4 h-4" style={{ color: 'rgba(47,128,237,0.6)' }} />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold leading-tight">Akses Lokasi GPS</p>
+                    <p className="text-[11px] mt-0.5 leading-snug transition-colors" style={{ color: gpsChecked ? 'rgba(47,128,237,0.8)' : 'rgba(255,255,255,0.35)' }}>
+                      {gpsChecked ? '✓ Izin lokasi diberikan' : 'Ketuk untuk izinkan akses lokasi'}
+                    </p>
+                  </div>
+                  <div
+                    className="w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all duration-300"
+                    style={{
+                      borderColor: gpsChecked ? 'rgba(47,128,237,0.8)' : 'rgba(255,255,255,0.15)',
+                      background: gpsChecked ? 'rgba(47,128,237,0.8)' : 'transparent'
+                    }}
+                  >
+                    {gpsChecked && <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                  </div>
+                </button>
+
+                {/* AI System */}
+                <button
+                  onClick={handleAiToggle}
+                  className="relative w-full flex items-center gap-3.5 p-4 rounded-2xl overflow-hidden text-left transition-all duration-300"
+                  style={{
+                    background: aiChecked ? 'rgba(138,43,226,0.12)' : 'rgba(138,43,226,0.04)',
+                    border: aiChecked ? '1px solid rgba(138,43,226,0.4)' : '1px solid rgba(138,43,226,0.15)',
+                    boxShadow: aiChecked ? '0 0 20px rgba(138,43,226,0.1)' : 'none'
+                  }}
+                >
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300"
+                    style={{
+                      background: aiChecked
+                        ? 'linear-gradient(135deg, rgba(138,43,226,0.8), rgba(138,43,226,0.5))'
+                        : 'rgba(138,43,226,0.08)',
+                      border: aiChecked ? '1px solid rgba(138,43,226,0.5)' : '1px solid rgba(138,43,226,0.2)',
+                      boxShadow: aiChecked ? '0 0 16px rgba(138,43,226,0.4)' : 'none'
+                    }}
+                  >
+                    {aiChecked ? (
+                      <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <Cpu className="w-4 h-4" style={{ color: 'rgba(138,43,226,0.6)' }} />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold leading-tight">Aktifkan Sistem AI</p>
+                    <p className="text-[11px] mt-0.5 leading-snug transition-colors" style={{ color: aiChecked ? 'rgba(138,43,226,0.9)' : 'rgba(255,255,255,0.35)' }}>
+                      {aiChecked ? '✓ Sistem AI diaktifkan' : 'Ketuk untuk aktifkan Neural Network'}
+                    </p>
+                  </div>
+                  <div
+                    className="w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all duration-300"
+                    style={{
+                      borderColor: aiChecked ? 'rgba(138,43,226,0.8)' : 'rgba(255,255,255,0.15)',
+                      background: aiChecked ? 'rgba(138,43,226,0.8)' : 'transparent'
+                    }}
+                  >
+                    {aiChecked && <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                  </div>
+                </button>
+              </div>
+
+              {/* ── CTA ── */}
+              <div className="px-5 pt-4 pb-5">
+                <button
+                  onClick={handleAllowLocation}
+                  disabled={!gpsChecked || !aiChecked}
+                  className="relative w-full py-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2.5 overflow-hidden transition-all duration-300 group"
+                  style={{
+                    background: (gpsChecked && aiChecked)
+                      ? 'linear-gradient(135deg, #2f80ed 0%, #6a3de8 50%, #8a2be2 100%)'
+                      : 'rgba(255,255,255,0.05)',
+                    boxShadow: (gpsChecked && aiChecked) ? '0 8px 32px rgba(47,128,237,0.35), 0 2px 8px rgba(0,0,0,0.3)' : 'none',
+                    border: (gpsChecked && aiChecked) ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                    cursor: (gpsChecked && aiChecked) ? 'pointer' : 'not-allowed',
+                    transform: (gpsChecked && aiChecked) ? undefined : 'none'
+                  }}
+                >
+                  {/* Shine sweep - only when enabled */}
+                  {(gpsChecked && aiChecked) && (
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)' }}></div>
+                  )}
+                  <svg className="w-4 h-4 relative" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="relative" style={{ color: (gpsChecked && aiChecked) ? 'white' : 'rgba(255,255,255,0.25)' }}>
+                    {(gpsChecked && aiChecked) ? 'Setuju, AI Cari Lokasi Akurat' : 'Aktifkan izin di atas terlebih dahulu'}
+                  </span>
+                </button>
+
+              </div>
+            </div>
           </div>
         </div>
       )}
